@@ -1,9 +1,15 @@
 package com.devsuperior.movieflix.resources.exceptions;
 
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.time.Instant;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -11,10 +17,28 @@ import com.devsuperior.movieflix.services.exceptions.UnauthorizedException;
 
 @ControllerAdvice
 public class ResourceExceptionHandler {
+    
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<OAuthCustomError> unauthorized(UnauthorizedException e, HttpServletRequest request) {
         OAuthCustomError err = new OAuthCustomError("Access denied", e.getMessage());
         HttpStatus status = HttpStatus.UNAUTHORIZED;
+        return ResponseEntity.status(status).body(err);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ValidationError> validation(MethodArgumentNotValidException e, HttpServletRequest request) {
+        ValidationError err = new ValidationError();
+        HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
+        err.setTimestamp(Instant.now());
+        err.setMessage(e.getMessage());
+        err.setError("Validation exception");
+        err.setStatus(status.value());
+        err.setPath(request.getRequestURI());
+        
+        for(FieldError f : e.getBindingResult().getFieldErrors()) {
+            err.addErrors(f.getField(), f.getDefaultMessage());
+        }
+
         return ResponseEntity.status(status).body(err);
     }
 

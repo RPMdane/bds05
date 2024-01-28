@@ -2,13 +2,19 @@ package com.devsuperior.movieflix.dto;
 
 import java.io.Serializable;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+
 import com.devsuperior.movieflix.entities.User;
 
 public class UserDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @NotEmpty(message = "This field can not be empty")
     private Long id;
+    @NotEmpty(message = "This field can not be empty")
     private String name;
+    @Email(message = "Insert a valid email address")
     private String email;
 
     public UserDTO() {
